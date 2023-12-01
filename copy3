@@ -1,0 +1,57 @@
+from flask import Flask, request
+import whisper
+from pydub import AudioSegment
+
+from whisper.utils import get_writer
+
+app = Flask(__name__)
+
+@app.route('/')
+def index():
+    return 'Web App with Python Flask!'
+
+@app.route('/whisper', methods=['POST'])
+def json_example():
+    
+    headers     = request.headers
+    filenameWithoutExt    = headers.get('filenameWithoutExt')
+    filenameWAV = headers.get('filenameWAV')
+
+    print(filenameWAV)
+
+    binary_data = request.data
+    
+    file = open(filenameWAV, 'wb')
+	   
+    try:
+        file.write(binary_data)
+    finally:
+        file.close()
+
+    model = whisper.load_model("large")
+    result = model.transcribe(filenameWAV)
+    print(result["text"])    
+
+    output_directory = "./"
+    # Save as a TSV file
+    tsv_writer = get_writer("tsv", output_directory)
+    tsv_writer(result, filenameWAV)
+
+
+	
+    audio = AudioSegment.from_wav(filenameWAV)
+    channels = audio.split_to_mono()
+    
+    left_channel = channels[0]
+    filenameLeftWAV = filenameWithoutExt+"_1.WAV"
+    left_channel.export(filenameLeftWAV, format="wav")
+
+    model = whisper.load_model("base")
+    result = model.transcribe(filenameWAV)
+    print(result["text"])
+
+    tsv_writer(result, filenameLeftWAV)
+ 
+    return 'JSON Object Example'
+
+app.run(host='0.0.0.0', port=8080, debug=True)

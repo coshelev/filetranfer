@@ -1,0 +1,67 @@
+from flask import Flask, request
+import whisper
+from pydub import AudioSegment
+
+#from smb.SMBConnection import SMBConnection
+
+# Define the SMB connection parameters
+#server_name = '192.168.0.14'  # Replace this with your server IP
+#share_name = 'SysAgr_txt'  # Replace this with your share name
+#username = 'beuser'  # Replace this with your username
+#password = 'P@ssw0rd'  # Replace this with your password
+
+#import base64
+
+app = Flask(__name__)
+
+@app.route('/')
+def index():
+    return 'Web App with Python Flask!'
+
+@app.route('/whisper', methods=['POST'])
+def json_example():
+    #data = request.get_json()
+    #print(data)
+
+    #file_path = '//192.168.0.14/SysAgr_txt/1700208178.30741.txt'
+    
+    #conn = SMBConnection(username, password, '', server_name, use_ntlm_v2=True)
+    #conn.connect(server_name, 445)
+    #file_list = conn.listPath(share_name, '/')  # Replace '/' with the path to the directory you want to list
+    #for file_info in file_list:
+    #    print(file_info.filename)   
+    #conn.close()
+
+    headers     = request.headers
+    filename    = headers.get('filename')
+    filenameWAV = headers.get('filenameWAV')
+
+    print(filenameWAV)
+
+    binary_data = request.data
+    
+    file = open(filenameWAV, 'wb')
+	   
+    try:
+        file.write(binary_data)
+    finally:
+        file.close()
+
+    model = whisper.load_model("large")
+    result = model.transcribe(filenameWAV)
+    print(result["text"])    
+	
+    audio = AudioSegment.from_wav(filenameWAV)
+    channels = audio.split_to_mono()
+    
+    left_channel = channels[0]
+    filenameLeftWAV = "_1.WAV"
+    left_channel.export(filenameLeftWAV, format="wav")
+
+    model = whisper.load_model("base")
+    result = model.transcribe(filenameWAV)
+    print(result["text"])
+ 
+    return 'JSON Object Example'
+
+app.run(host='0.0.0.0', port=8080, debug=True)

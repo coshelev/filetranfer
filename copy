@@ -1,0 +1,53 @@
+from flask import Flask, request, jsonify
+
+#from smb.SMBConnection import SMBConnection
+
+# Define the SMB connection parameters
+#server_name = '192.168.0.14'  # Replace this with your server IP
+#share_name = 'SysAgr_txt'  # Replace this with your share name
+#username = 'beuser'  # Replace this with your username
+#password = 'P@ssw0rd'  # Replace this with your password
+
+import base64
+
+app = Flask(__name__)
+
+@app.route('/')
+def index():
+    return 'Web App with Python Flask!'
+
+@app.route('/whisper', methods=['POST'])
+def json_example():
+    #data = request.get_json()
+    #print(data)
+
+    #file_path = '//192.168.0.14/SysAgr_txt/1700208178.30741.txt'
+    
+    #conn = SMBConnection(username, password, '', server_name, use_ntlm_v2=True)
+    #conn.connect(server_name, 445)
+    #file_list = conn.listPath(share_name, '/')  # Replace '/' with the path to the directory you want to list
+    #for file_info in file_list:
+    #    print(file_info.filename)   
+    #conn.close()
+
+    headers = request.headers
+    filename = headers.get('filename')
+    print(filename)
+
+    binary_data = request.data
+    
+    file = open(filename, 'wb')
+	
+   
+    try:
+        file.write(binary_data)
+    finally:
+        file.close()
+
+    return 'JSON Object Example'
+
+
+
+
+
+app.run(host='0.0.0.0', port=8080, debug=True)
