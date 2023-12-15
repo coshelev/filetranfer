@@ -1,0 +1,1 @@
+whisper-faster.exe "C:\AI\Whisper\wav\*.wav" --language=Russian --model=large-v3 --output_dir="txt" --output_format=txt --beep_off
